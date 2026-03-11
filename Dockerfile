@@ -74,6 +74,24 @@ RUN set -eux; \
     # Clean apt cache to keep image small
     rm -rf /var/lib/apt/lists/*
 
+    
+##### Install PostgreSQL client (psql) #######################################
+# Installs the PostgreSQL command line client for database administration
+# and debugging inside the container.
+# Provides the "psql" command.
+
+RUN set -eux; \
+    \
+    # Update package lists
+    apt-get update; \
+    \
+    # Install PostgreSQL client
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        postgresql-client; \
+    \
+    # Clean apt cache to keep image small
+    rm -rf /var/lib/apt/lists/*
+
 
 ##### Configure vim (optional) ###############################################
 # Installs personal vim configuration inside the container
