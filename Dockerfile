@@ -8,7 +8,6 @@
 # -------------------------------------------------------------------
 FROM ubuntu:26.04
 
-
 ##### Configure timezone and locale ##########################################
 # Sets timezone and locale to Europe/Berlin and German UTF-8
 

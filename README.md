@@ -1,6 +1,6 @@
 # ubupy
 
-Lightweight **Ubuntu 24.04** image with **Python 3** and **pip3**, including useful tools such as  
+Lightweight **Ubuntu 26.04** image with **Python 3** and **pip3**, including useful tools such as  
 `postgresql-client`, `iproute2`, `curl`, and `redis-tools`.  
 The image is localized for **German (de_DE)** environments.
 
