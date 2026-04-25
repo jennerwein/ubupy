@@ -1,8 +1,9 @@
 #!/bin/bash
 
-export TAG=3.0.0
-export latest=false  # Push no latest
+export TAG=3.0.1
+export latest=true   # Push latest? true/false
 
+# TAG=3.0.1          # 25.04.26: improved, latest=true
 # TAG=3.0.0          # ubuntu:26.04
 # TAG=2.1.1-dev      # with psql Version 18, updated 21.04.2026
 # TAG=2.1-dev        # ubuntu:26.04 (Development)

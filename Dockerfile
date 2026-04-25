@@ -1,4 +1,4 @@
-# Ubuntu with Python 3
+# Ubuntu 26.04 with Python 3
 # TAG: siehe File config.sh. Wird durch make-Befehle gesetzt.
 
 # -------------------------------------------------------------------
@@ -14,7 +14,7 @@ FROM ubuntu:26.04
 ENV TZ=Europe/Berlin
 ENV LANG=de_DE.UTF-8
 ENV LANGUAGE=de_DE:en
-
+ENV LC_ALL=de_DE.UTF-8
 
 # -------------------------------------------------------------------
 # Install base utilities and Python runtime
@@ -24,42 +24,43 @@ ENV LANGUAGE=de_DE:en
 # which keeps the image smaller.
 #
 # Packages installed:
-#   tzdata            timezone configuration
-#   locales           locale generation
-#   vim               editor for interactive container use
-#   iproute2          networking tools (ip command)
-#   iputils-ping      ping utility
+#   ca-certificates   trusted SSL certificates
 #   curl              HTTP client
 #   dnsutils          DNS tools (dig, nslookup)
+#   iproute2          networking tools (ip command)
+#   iputils-ping      ping utility
+#   locales           locale generation
 #   net-tools         classic networking tools (netstat etc.)
-#   redis-tools       redis-cli for debugging Redis
+#   python-is-python3 ensures "python" points to python3
 #   python3           Python runtime
 #   python3-venv      virtual environment support
-#   python-is-python3 ensures "python" points to python3
-#   gnupg             cryptographic utilities
-#   ca-certificates   trusted SSL certificates
+#   redis-tools       redis-cli for debugging Redis
+#   tzdata            timezone configuration
+#   vim               editor for interactive container use
 # -------------------------------------------------------------------
 RUN set -eux; \
     \
+    # apt without interactive dialogs
+    export DEBIAN_FRONTEND=noninteractive; \
+    \
     # Update package lists
-    DEBIAN_FRONTEND=noninteractive apt-get update; \
+    apt-get update; \
     \
     # Install base packages and Python runtime
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        tzdata \
-        locales \
-        vim \
-        iproute2 \
-        iputils-ping \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
         curl \
         dnsutils \
+        iproute2 \
+        iputils-ping \
+        locales \
         net-tools \
-        redis-tools \
+        python-is-python3 \
         python3 \
         python3-venv \
-        python-is-python3 \
-        gnupg \
-        ca-certificates; \
+        redis-tools \
+        tzdata \
+        vim; \
     \
     # Configure timezone
     echo "$TZ" > /etc/timezone; \
@@ -85,8 +86,8 @@ RUN set -eux; \
     apt-get update; \
     \
     # Install PostgreSQL client
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        postgresql-client; \
+    apt-get install -y --no-install-recommends \
+        postgresql-client-18; \
     \
     # Clean apt cache to keep image small
     rm -rf /var/lib/apt/lists/*
