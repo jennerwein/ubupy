@@ -1,5 +1,6 @@
 # Ubuntu 26.04 with Python 3
-# TAG: siehe File config.sh. Wird durch make-Befehle gesetzt.
+# The image version is taken from config.sh and passed in by the Makefile
+# as build argument VERSION (see "Image metadata" below).
 
 # -------------------------------------------------------------------
 # Base image
@@ -8,35 +9,32 @@
 # -------------------------------------------------------------------
 FROM ubuntu:26.04
 
-##### Configure timezone and locale ##########################################
-# Sets timezone and locale to Europe/Berlin and German UTF-8
+##### Configure timezone #####################################################
 
 ENV TZ=Europe/Berlin
-ENV LANG=de_DE.UTF-8
-ENV LANGUAGE=de_DE:en
-ENV LC_ALL=de_DE.UTF-8
 
 # -------------------------------------------------------------------
-# Install base utilities and Python runtime
+# Install base utilities, Python runtime and PostgreSQL client
 # Configure timezone and locale
 #
 # --no-install-recommends avoids installing optional packages
 # which keeps the image smaller.
 #
 # Packages installed:
-#   ca-certificates   trusted SSL certificates
-#   curl              HTTP client
-#   dnsutils          DNS tools (dig, nslookup)
-#   iproute2          networking tools (ip command)
-#   iputils-ping      ping utility
-#   locales           locale generation
-#   net-tools         classic networking tools (netstat etc.)
-#   python-is-python3 ensures "python" points to python3
-#   python3           Python runtime
-#   python3-venv      virtual environment support
-#   redis-tools       redis-cli for debugging Redis
-#   tzdata            timezone configuration
-#   vim               editor for interactive container use
+#   ca-certificates       trusted SSL certificates
+#   curl                  HTTP client
+#   dnsutils              DNS tools (dig, nslookup)
+#   iproute2              networking tools (ip command)
+#   iputils-ping          ping utility
+#   locales               locale generation
+#   net-tools             classic networking tools (netstat etc.)
+#   postgresql-client-18  PostgreSQL command line client (psql)
+#   python-is-python3     ensures "python" points to python3
+#   python3               Python runtime
+#   python3-venv          virtual environment support
+#   redis-tools           redis-cli for debugging Redis
+#   tzdata                timezone configuration
+#   vim                   editor for interactive container use
 # -------------------------------------------------------------------
 RUN set -eux; \
     \
@@ -46,7 +44,7 @@ RUN set -eux; \
     # Update package lists
     apt-get update; \
     \
-    # Install base packages and Python runtime
+    # Install packages
     apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
@@ -55,6 +53,7 @@ RUN set -eux; \
         iputils-ping \
         locales \
         net-tools \
+        postgresql-client-18 \
         python-is-python3 \
         python3 \
         python3-venv \
@@ -74,23 +73,14 @@ RUN set -eux; \
     # Clean apt cache to keep image small
     rm -rf /var/lib/apt/lists/*
 
-    
-##### Install PostgreSQL client (psql) #######################################
-# Installs the PostgreSQL command line client for database administration
-# and debugging inside the container.
-# Provides the "psql" command.
 
-RUN set -eux; \
-    \
-    # Update package lists
-    apt-get update; \
-    \
-    # Install PostgreSQL client
-    apt-get install -y --no-install-recommends \
-        postgresql-client-18; \
-    \
-    # Clean apt cache to keep image small
-    rm -rf /var/lib/apt/lists/*
+##### Configure locale #######################################################
+# Set only after the locale has been generated above, otherwise apt and
+# perl print "Setting locale failed" warnings during the build.
+
+ENV LANG=de_DE.UTF-8
+ENV LANGUAGE=de_DE:en
+ENV LC_ALL=de_DE.UTF-8
 
 
 ##### Configure vim (optional) ###############################################
@@ -103,9 +93,10 @@ COPY vim/badwolf.vim /root/.vim/colors/badwolf.vim
 
 ##### Set environment variables ##############################################
 # Python container defaults:
-#   PYTHONUNBUFFERED            logs appear immediately
-#   PYTHONDONTWRITEBYTECODE     prevents .pyc files
+#   PYTHONUNBUFFERED              logs appear immediately
+#   PYTHONDONTWRITEBYTECODE       prevents .pyc files
 #   PIP_DISABLE_PIP_VERSION_CHECK avoids pip update message
+#   CONTAINER                     lets scripts detect that they run in a container
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -133,6 +124,23 @@ RUN python3 -m venv "$VIRTUAL_ENV" \
  && "$VIRTUAL_ENV/bin/pip" install --no-cache-dir --upgrade pip wheel
 
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+
+##### Image metadata #########################################################
+# OCI labels. VERSION and CREATED are passed in by the Makefile.
+# CREATED must be set here, otherwise the value of the base image is inherited.
+
+ARG VERSION=dev
+ARG CREATED=unknown
+
+LABEL org.opencontainers.image.title="ubupy" \
+      org.opencontainers.image.description="Ubuntu 26.04 with Python 3, a ready-to-use venv and common network/database CLI tools" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.created="${CREATED}" \
+      org.opencontainers.image.source="https://github.com/jennerwein/ubupy" \
+      org.opencontainers.image.url="https://hub.docker.com/r/jennerwein/ubupy" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.base.name="docker.io/library/ubuntu:26.04"
 
 
 ##### Final setup ############################################################

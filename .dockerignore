@@ -1,0 +1,6 @@
+# Only vim/ is copied into the image; keep the build context small.
+.git
+*.md
+LICENSE
+Makefile
+config.sh

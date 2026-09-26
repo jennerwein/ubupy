@@ -1,18 +1,18 @@
-" Shortcut jk für <esc> 
+" Shortcut jk for <esc>
 :inoremap jk <esc>
 
-" Syntax-highlighting anschalten und Farbschema festlegen
+" Enable syntax highlighting and set color scheme
 syntax on
 colorscheme badwolf
 
-" Statuszeile, Nummerierung, ... anzeigen
+" Show ruler, status line, line numbers, ...
 set ruler laststatus=2 number title hlsearch
 
-" Swapfile abschalten"
+" Disable swap file
 set noswapfile
 
-"Auf Unixfileformat umschalten"
+" Use Unix file format
 set fileformat=unix
 
-" Sound abschalten"
+" Disable bell
 set belloff=all

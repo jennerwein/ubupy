@@ -8,6 +8,11 @@ SHELL := bash
 # Default target when only "make" is called
 .DEFAULT_GOAL := help
 
+# Docker Hub repository, local test tag and container name
+IMAGE          := jennerwein/ubupy
+TEST_TAG       := test
+CONTAINER_NAME := ubuntu-python3
+
 # Helper macro: sources config.sh and then executes the given command
 define WITH_CONF
 source ./config.sh; $(1)
@@ -32,16 +37,22 @@ help:
 # build: removes the old test image (if it exists) and builds a new one
 # Uses --pull to ensure the latest base image is used and --no-cache
 # to force a completely fresh build.
+# TAG from config.sh and the build date are stored as image labels.
 # -------------------------------------------------------------------
 build:
-	docker rmi jennerwein/ubupy:test || true
-	docker build --pull --no-cache -t jennerwein/ubupy:test .
+	$(call WITH_CONF, \
+		docker rmi $(IMAGE):$(TEST_TAG) || true; \
+		docker build --pull --no-cache \
+			--build-arg VERSION="$${TAG}" \
+			--build-arg CREATED="$$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+			-t $(IMAGE):$(TEST_TAG) . \
+	)
 
 # -------------------------------------------------------------------
 # run: starts the container interactively
 # -------------------------------------------------------------------
 run:
-	docker run --name ubuntu-python3 --rm -it jennerwein/ubupy:test
+	docker run --name $(CONTAINER_NAME) --rm -it $(IMAGE):$(TEST_TAG)
 
 # -------------------------------------------------------------------
 # push: tags and uploads images to Docker Hub
@@ -51,13 +62,13 @@ run:
 push:
 	$(call WITH_CONF, \
 		echo "Pushing version tag $$TAG"; \
-		docker tag jennerwein/ubupy:test jennerwein/ubupy:$${TAG}; \
-		docker push jennerwein/ubupy:$${TAG}; \
+		docker tag $(IMAGE):$(TEST_TAG) $(IMAGE):$${TAG}; \
+		docker push $(IMAGE):$${TAG}; \
 		\
 		if [ "$${latest}" = "true" ]; then \
 			echo "Also updating latest tag"; \
-			docker tag jennerwein/ubupy:test jennerwein/ubupy:latest; \
-			docker push jennerwein/ubupy:latest; \
+			docker tag $(IMAGE):$(TEST_TAG) $(IMAGE):latest; \
+			docker push $(IMAGE):latest; \
 		else \
 			echo "Skipping latest tag (latest=false)"; \
 		fi \
